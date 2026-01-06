@@ -27,7 +27,7 @@ import { MqttPublishError, MysaApiError, UnauthenticatedError } from './Errors';
 import { Logger, VoidLogger } from './Logger';
 import { MysaApiClientEventTypes } from './MysaApiClientEventTypes';
 import { MysaApiClientOptions } from './MysaApiClientOptions';
-import { MysaDeviceMode, MysaFanSpeedMode } from './MysaDeviceMode';
+import { MysaDeviceMode, MysaFanSpeedMode, MysaScheduleMode } from './MysaDeviceMode';
 
 dayjs.extend(duration);
 
@@ -404,10 +404,11 @@ export class MysaApiClient {
    * @param mode - The operating mode to set (one of MysaDeviceMode values, or undefined to leave unchanged).
    * @param fanSpeed - The fan speed mode to set ('low', 'medium', 'high', 'max', 'auto', or undefined to leave
    *   unchanged).
+   * @param scheduleMode - The schedule mode to set ('followSchedule', 'hold', or undefined to leave unchanged).
    * @throws {@link UnauthenticatedError} When the user is not authenticated.
    * @throws {@link Error} When MQTT connection or command sending fails.
    */
-  async setDeviceState(deviceId: string, setPoint?: number, mode?: MysaDeviceMode, fanSpeed?: MysaFanSpeedMode) {
+  async setDeviceState(deviceId: string, setPoint?: number, mode?: MysaDeviceMode, fanSpeed?: MysaFanSpeedMode, scheduleMode?: MysaScheduleMode): Promise<void> {
     this._logger.debug(`Setting device state for '${deviceId}'`);
 
     if (!this._cachedDevices) {
@@ -424,6 +425,7 @@ export class MysaApiClient {
     this._logger.debug(`Sending request to set device state for '${deviceId}'...`);
     const modeMap = { off: 1, auto: 2, heat: 3, cool: 4, fan_only: 5, dry: 6 };
     const fanSpeedMap = { auto: 1, low: 3, medium: 5, high: 7, max: 8 };
+    const scheduledModeMap = { followSchedule: 1, hold: 2 };
 
     const payload = serializeMqttPayload<ChangeDeviceState>({
       msg: InMessageType.CHANGE_DEVICE_STATE,
@@ -455,7 +457,8 @@ export class MysaApiClient {
             tm: -1,
             sp: setPoint,
             md: mode ? modeMap[mode] : undefined,
-            fn: fanSpeed ? fanSpeedMap[fanSpeed] : undefined
+            fn: fanSpeed ? fanSpeedMap[fanSpeed] : undefined,
+            ho: scheduleMode ? scheduledModeMap[scheduleMode] : undefined,
           }
         ]
       }

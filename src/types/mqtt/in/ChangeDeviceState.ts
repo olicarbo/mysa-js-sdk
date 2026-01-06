@@ -38,6 +38,8 @@ export interface ChangeDeviceState extends MsgPayload<InMessageType.CHANGE_DEVIC
         tm: number;
         /** Optional fan speed (1 = auto, 3 = low, 5 = medium, 7 = high, 8 = max). AC only */
         fn?: number;
+        /** Optional schedule mode (1 = followSchedule, 2 = hold). Thermostat only */
+        ho?: number;
       }
     ];
     /**

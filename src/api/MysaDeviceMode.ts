@@ -12,3 +12,10 @@ export type MysaDeviceMode = 'off' | 'heat' | 'cool' | 'dry' | 'fan_only' | 'aut
  * Defines the possible fan speed states that a Mysa thermostat device can be set to.
  */
 export type MysaFanSpeedMode = 'auto' | 'low' | 'medium' | 'high' | 'max';
+
+/**
+ * Union type representing the available schedule modes for Mysa devices.
+ *
+ * Defines the possible schedule states that a Mysa thermostat device can be set to.
+ */
+export type MysaScheduleMode = 'followSchedule' | 'hold';

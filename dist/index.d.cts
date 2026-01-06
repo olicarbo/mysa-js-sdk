@@ -63,6 +63,12 @@ type MysaDeviceMode = 'off' | 'heat' | 'cool' | 'dry' | 'fan_only' | 'auto';
  * Defines the possible fan speed states that a Mysa thermostat device can be set to.
  */
 type MysaFanSpeedMode = 'auto' | 'low' | 'medium' | 'high' | 'max';
+/**
+ * Union type representing the available schedule modes for Mysa devices.
+ *
+ * Defines the possible schedule states that a Mysa thermostat device can be set to.
+ */
+type MysaScheduleMode = 'followSchedule' | 'hold';
 
 /**
  * Interface representing a device state change event for a Mysa device.
@@ -325,6 +331,26 @@ interface FirmwareDevice {
  */
 interface Firmwares {
     Firmware: Record<string, FirmwareDevice>;
+}
+
+/**
+ * Home information object.
+ */
+interface HomeBase {
+    /** Unique home identifier */
+    Id: string;
+    /** User-assigned home name */
+    Name?: string;
+}
+/**
+ * Top-level interface for the homes REST API response.
+ *
+ * Contains the complete collection of homes associated with a user account, typically returned from API endpoints
+ * that fetch home information.
+ */
+interface Homes {
+    /** Collection of all homes */
+    Homes: HomeBase[];
 }
 
 /** Represents a timestamped value with metadata */
@@ -855,6 +881,16 @@ declare class MysaApiClient {
      */
     getDeviceStates(): Promise<DeviceStates>;
     /**
+     * Retrieves the list of homes associated with the user.
+     *
+     * This method fetches all Mysa homes linked to the authenticated user's account.
+     *
+     * @returns A promise that resolves to the list of homes.
+     * @throws {@link MysaApiError} When the API request fails.
+     * @throws {@link UnauthenticatedError} When the user is not authenticated.
+     */
+    getHomes(): Promise<Homes>;
+    /**
      * Sets the state of a specific device by sending commands via MQTT.
      *
      * This method allows you to change the temperature set point and/or operating mode of a Mysa device. The command is
@@ -881,10 +917,11 @@ declare class MysaApiClient {
      * @param mode - The operating mode to set (one of MysaDeviceMode values, or undefined to leave unchanged).
      * @param fanSpeed - The fan speed mode to set ('low', 'medium', 'high', 'max', 'auto', or undefined to leave
      *   unchanged).
+     * @param scheduleMode - The schedule mode to set ('followSchedule', 'hold', or undefined to leave unchanged).
      * @throws {@link UnauthenticatedError} When the user is not authenticated.
      * @throws {@link Error} When MQTT connection or command sending fails.
      */
-    setDeviceState(deviceId: string, setPoint?: number, mode?: MysaDeviceMode, fanSpeed?: MysaFanSpeedMode): Promise<void>;
+    setDeviceState(deviceId: string, setPoint?: number, mode?: MysaDeviceMode, fanSpeed?: MysaFanSpeedMode, scheduleMode?: MysaScheduleMode): Promise<void>;
     /**
      * Starts receiving real-time updates for the specified device.
      *
@@ -1043,6 +1080,8 @@ interface ChangeDeviceState extends MsgPayload<InMessageType.CHANGE_DEVICE_STATE
                 tm: number;
                 /** Optional fan speed (1 = auto, 3 = low, 5 = medium, 7 = high, 8 = max). AC only */
                 fn?: number;
+                /** Optional schedule mode (1 = followSchedule, 2 = hold). Thermostat only */
+                ho?: number;
             }
         ];
         /**
@@ -1101,4 +1140,4 @@ type MsgTypeInPayload = CheckDeviceSettings | StartPublishingDeviceStatus;
  */
 type InPayload = MsgTypeInPayload | MsgInPayload;
 
-export { type BrandInfo, type ChangeDeviceState, type CheckDeviceSettings, type DeviceBase, type DeviceLog, type DevicePostBoot, type DeviceSetpointChange, type DeviceState, type DeviceStateChange, type DeviceStates, type DeviceStatesObj, type DeviceV1Status, type DeviceV2Status, type Devices, type DevicesObj, type FirmwareDevice, type Firmwares, InMessageType, type InPayload, type Logger, type ModeObj, MqttPublishError, type MqttPublishOptions, type MsgBasePayload, type MsgInPayload, type MsgOutPayload, type MsgPayload, type MsgTypeBasePayload, type MsgTypeInPayload, type MsgTypeOutPayload, type MsgTypePayload, MysaApiClient, type MysaApiClientEventTypes, type MysaApiClientOptions, MysaApiError, type MysaDeviceMode, type MysaFanSpeedMode, type MysaSession, OutMessageType, type OutPayload, type SetPointChange, type StartPublishingDeviceStatus, type StateChange, type Status, type SupportedCaps, type TimestampedValue, UnauthenticatedError, VoidLogger };
+export { type BrandInfo, type ChangeDeviceState, type CheckDeviceSettings, type DeviceBase, type DeviceLog, type DevicePostBoot, type DeviceSetpointChange, type DeviceState, type DeviceStateChange, type DeviceStates, type DeviceStatesObj, type DeviceV1Status, type DeviceV2Status, type Devices, type DevicesObj, type FirmwareDevice, type Firmwares, type HomeBase, type Homes, InMessageType, type InPayload, type Logger, type ModeObj, MqttPublishError, type MqttPublishOptions, type MsgBasePayload, type MsgInPayload, type MsgOutPayload, type MsgPayload, type MsgTypeBasePayload, type MsgTypeInPayload, type MsgTypeOutPayload, type MsgTypePayload, MysaApiClient, type MysaApiClientEventTypes, type MysaApiClientOptions, MysaApiError, type MysaDeviceMode, type MysaFanSpeedMode, type MysaScheduleMode, type MysaSession, OutMessageType, type OutPayload, type SetPointChange, type StartPublishingDeviceStatus, type StateChange, type Status, type SupportedCaps, type TimestampedValue, UnauthenticatedError, VoidLogger };

@@ -358,6 +358,7 @@ var MysaApiClient = class {
         Authorization: `${session.getIdToken().getJwtToken()}`
       }
     });
+    this._logger.debug(`AuthorizationToken: ${session.getIdToken().getJwtToken()}`);
     if (!response.ok) {
       throw new MysaApiError(response);
     }
@@ -456,6 +457,28 @@ var MysaApiClient = class {
     return response.json();
   }
   /**
+   * Retrieves the list of homes associated with the user.
+   *
+   * This method fetches all Mysa homes linked to the authenticated user's account.
+   *
+   * @returns A promise that resolves to the list of homes.
+   * @throws {@link MysaApiError} When the API request fails.
+   * @throws {@link UnauthenticatedError} When the user is not authenticated.
+   */
+  async getHomes() {
+    this._logger.debug(`Fetching homes...`);
+    const session = await this._getFreshSession();
+    const response = await this._fetcher(`${MysaApiBaseUrl}/homes`, {
+      headers: {
+        Authorization: `${session.getIdToken().getJwtToken()}`
+      }
+    });
+    if (!response.ok) {
+      throw new MysaApiError(response);
+    }
+    return response.json();
+  }
+  /**
    * Sets the state of a specific device by sending commands via MQTT.
    *
    * This method allows you to change the temperature set point and/or operating mode of a Mysa device. The command is
@@ -482,10 +505,11 @@ var MysaApiClient = class {
    * @param mode - The operating mode to set (one of MysaDeviceMode values, or undefined to leave unchanged).
    * @param fanSpeed - The fan speed mode to set ('low', 'medium', 'high', 'max', 'auto', or undefined to leave
    *   unchanged).
+   * @param scheduleMode - The schedule mode to set ('followSchedule', 'hold', or undefined to leave unchanged).
    * @throws {@link UnauthenticatedError} When the user is not authenticated.
    * @throws {@link Error} When MQTT connection or command sending fails.
    */
-  async setDeviceState(deviceId, setPoint, mode, fanSpeed) {
+  async setDeviceState(deviceId, setPoint, mode, fanSpeed, scheduleMode) {
     var _a;
     this._logger.debug(`Setting device state for '${deviceId}'`);
     if (!this._cachedDevices) {
@@ -498,6 +522,7 @@ var MysaApiClient = class {
     this._logger.debug(`Sending request to set device state for '${deviceId}'...`);
     const modeMap = { off: 1, auto: 2, heat: 3, cool: 4, fan_only: 5, dry: 6 };
     const fanSpeedMap = { auto: 1, low: 3, medium: 5, high: 7, max: 8 };
+    const scheduledModeMap = { followSchedule: 1, hold: 2 };
     const payload = serializeMqttPayload({
       msg: 44 /* CHANGE_DEVICE_STATE */,
       id: now.valueOf(),
@@ -520,7 +545,8 @@ var MysaApiClient = class {
             tm: -1,
             sp: setPoint,
             md: mode ? modeMap[mode] : void 0,
-            fn: fanSpeed ? fanSpeedMap[fanSpeed] : void 0
+            fn: fanSpeed ? fanSpeedMap[fanSpeed] : void 0,
+            ho: scheduleMode ? scheduledModeMap[scheduleMode] : void 0
           }
         ]
       }

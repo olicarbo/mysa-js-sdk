@@ -590,6 +590,7 @@ var MysaApiClient = class {
     const mqttConnection = await this._getMqttConnection();
     this._logger.debug(`Subscribing to MQTT topic '/v1/dev/${deviceId}/out'...`);
     await mqttConnection.subscribe(`/v1/dev/${deviceId}/out`, mqtt.QoS.AtLeastOnce, (_, payload2) => {
+      this._logger.debug(`Received MQTT message for device '${deviceId}'`);
       this._processMqttMessage(payload2);
     });
     this._logger.debug(`Sending request to start publishing device status for '${deviceId}'...`);
@@ -942,11 +943,16 @@ var MysaApiClient = class {
               7: "high",
               8: "max"
             };
+            const scheduledModeMap = {
+              1: "followSchedule",
+              2: "hold"
+            };
             this.emitter.emit("stateChanged", {
               deviceId: parsedPayload.src.ref,
               mode: parsedPayload.body.state.md ? modeMap[parsedPayload.body.state.md] : void 0,
               setPoint: parsedPayload.body.state.sp,
-              fanSpeed: parsedPayload.body.state.fn !== void 0 ? fanSpeedMap[parsedPayload.body.state.fn] : void 0
+              fanSpeed: parsedPayload.body.state.fn !== void 0 ? fanSpeedMap[parsedPayload.body.state.fn] : void 0,
+              followSchedule: parsedPayload.body.state.ho !== void 0 ? scheduledModeMap[parsedPayload.body.state.ho] : void 0
             });
             break;
           }

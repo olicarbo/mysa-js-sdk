@@ -359,6 +359,16 @@ export class MysaApiClient {
     return response.json();
   }
 
+
+  /**
+   * Retrieves the list of homes associated with the user.
+   *
+   * This method fetches all Mysa homes linked to the authenticated user's account.
+   *
+   * @returns A promise that resolves to the list of homes.
+   * @throws {@link MysaApiError} When the API request fails.
+   * @throws {@link UnauthenticatedError} When the user is not authenticated.
+   */
   async getHomes(): Promise<Homes> {
     this._logger.debug(`Fetching homes...`);
 
@@ -944,12 +954,17 @@ export class MysaApiClient {
               7: 'high',
               8: 'max'
             };
+            const scheduledModeMap: Record<number, MysaScheduleMode> = {
+              1: 'followSchedule',
+              2: 'hold'
+            };
 
             this.emitter.emit('stateChanged', {
               deviceId: parsedPayload.src.ref,
               mode: parsedPayload.body.state.md ? modeMap[parsedPayload.body.state.md] : undefined,
               setPoint: parsedPayload.body.state.sp,
-              fanSpeed: parsedPayload.body.state.fn !== undefined ? fanSpeedMap[parsedPayload.body.state.fn] : undefined
+              fanSpeed: parsedPayload.body.state.fn !== undefined ? fanSpeedMap[parsedPayload.body.state.fn] : undefined,
+              followSchedule: parsedPayload.body.state.ho !== undefined ? scheduledModeMap[parsedPayload.body.state.ho] : undefined
             });
             break;
           }

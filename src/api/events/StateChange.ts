@@ -1,4 +1,4 @@
-import { MysaDeviceMode, MysaFanSpeedMode } from '@/api/MysaDeviceMode';
+import { MysaDeviceMode, MysaFanSpeedMode, MysaScheduleMode } from '@/api/MysaDeviceMode';
 
 /**
  * Interface representing a device state change event for a Mysa device.
@@ -16,4 +16,6 @@ export interface StateChange {
   setPoint: number;
   /** Optional fan speed (1 = auto, 3 = low, 5 = medium, 7 = high, 8 = max). AC only */
   fanSpeed?: MysaFanSpeedMode;
+  /** Optional schedule mode (followSchedule or hold). */
+  followSchedule?: MysaScheduleMode;
 }

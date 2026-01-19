@@ -453,7 +453,7 @@ export class MysaApiClient {
       resp: 2,
       body: {
         ver: 1,
-        type: device.Model.startsWith('BB-V1')
+        type: device.Model.startsWith('BB-V1') || device.Model.startsWith('v1')
           ? 1
           : device.Model.startsWith('AC-V1')
             ? 2
